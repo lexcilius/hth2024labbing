@@ -1,0 +1,161 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <title>Exercise</title>
+    <link href="../css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+</head>
+<body class="bg-light">
+    <div class="container">
+        <h1>Lab 1</h1>
+        <h2>Scenario Overview</h2>
+        <p>The industrial control system (ICS) used in this scenario  simulates an environment that might be used to cool industrial equipment. The  ICS is made up of five systems. The first system contains a tank, tank level sensor  and a water pump. The second system is a programmable logic controller (PLC)  which controls the water pump based on the level of water found in the attached  tank. The third system is an Open Platform Communications (OPC) server which accesses  and modifies data found on the PLC. The fourth system is running Human Machine Interface  (HMI) software which communicates with the OPC server to provide a human system  operator with system statistics and control. The final system in the ICS is a security  appliance that provides routing and firewall services for all systems.
+        This scenario also make use of a system running Kali Linux. In this lab the virtual network switch is configured so that the Kail system receives all data transmitted. (<a href="reference/Visio-ZoneingAndICSSecurity-Insecure.pdf" target="_blank" title="Graphical network diagram">Network diagram</a>)</p>
+        <p>In this lab you are going to observe that when a hacker is  connected to the same network segment as the ICS systems, they are easily able  to view data being shared between all devices. After verifying this you will  move the hacker system to its own network and again attempt to view data being transferred.  You will discover that when a hacker is connected to a different segment then  the ICS systems they are no longer able to view data transfers.</p>
+        
+        <h3>Part 1</h3>
+        <p><strong>Install and Configure Systems</strong></p>
+        <p>In this part of the lab you are going to install and configure the systems needed to complete the lab. </p>
+        <ol>
+          <li><input type="checkbox"> If necessary, install the free <a href="https://www.oracle.com/virtualization/technologies/vm/downloads/virtualbox-downloads.html" target="_blank">Oracle VirtualBox Manager</a> software on your system.</li>
+          <li><input type="checkbox"> Download, and if necessary extract, the lab image <a href="https://www.nl.northweststate.edu/CAMO/software/VirtualMachine/VirtualBox/ICS-VirtualBox.ova">ICS-VirtualBox.ova</a>.</li>
+          <li><input type="checkbox"> Start the <span class="quote">Oracle VM VirtualBox</span> program.</li>
+          <li><input type="checkbox"> Import the<span class="quote"> ICS-VirtualBox.ova</span> lab image.</li>
+          <li><input type="checkbox"> After the import has completed access the <span class="quote">Settings</span> for the <span class="quote">Security Appliance</span> virtual machine and change its configuration so that it is bridged to the network device in your host computer.</li>
+          <li><input type="checkbox"> Power on the systems in the following order:
+            <ul>
+                <li><strong>Security Appliance</strong> [Username: <code>admin</code> Password: <code>Password01</code>]</li>
+                <li><strong>Sensor</strong> [Username: <code>root</code> Password: <code>Password01</code>]</li>
+                <li><strong>PLC</strong> [Username: <code>root</code> Password: <code>Password01</code>]</li>
+                <li><strong>OPC</strong> [Username: <code>student</code> Password: <code>Password01</code>]</li>
+                <li><strong>HMI</strong> [Username: <code>student</code> Password: <code>Password01</code>]</li>
+                <li><strong>Kali</strong> [Username: <code>student</code> Password: <code>Password01</code>]</li>
+            </ul>
+          </li>
+        </ol>
+
+        <h3>Part 2</h3>
+        <p><strong>Login and verify connectivity</strong></p>
+        <p>In this part of the lab you are going to login to the hacker system, view the system's IP address and verify that it can connect to the PLC.</p>
+        <ol>
+          <li><input type="checkbox"> Access the <span class="quote">Kali</span> system.</li>
+          <li><input type="checkbox"> At the login screen enter <span class="typed">student</span> into the <span class="quote">Enter your username</span> field and <span class="typed">Password01</span> into the <span class="quote">Enter your password</span> field.</li>
+          <li><input type="checkbox"> Click the <span class="button">Log In</span> button.</li>
+          <li><input type="checkbox"> Open a terminal (command prompt) window by clicking the <span class="typed">Terminal Emulator</span> button found at the upper left hand corner of the window (<a href="../images/Part3-1.png" target="_blank" title="Graphic showing location of screen element">Example</a>).</li>
+          <li><input type="checkbox"> View the network address of the system by typing the command <span class="typed">ip address show</span> (NOTE: You must press the <span class="typed">&lt;ENTER&gt;</span> key after typing a command). </li>
+          <li><input type="checkbox"> Examine the output of the command and find the IPv4 address associated with the active network card viewing the <span class="quote">inet</span> value associated with the network card labeled <span class="quote">cell-area-zone</span> (<a href="../images/Part3-2.png" target="_blank" title="Graphic showing location of screen element">Example</a>).
+            <ul>
+              <li>Notice that the system contains multiple network cards. Network card <span class="quote">1:</span> labeled <span class="quote">lo:</span> is the loopback card which is used for internal communications and testing, network card <span class="quote">2:</span> labeled <span class="quote">cell-area-zone:</span> is the card connected to the Cell/Area zone along with the ICS systems, network card <span class="quote">3:</span> labeled <span class="quote">manufact-zone</span> is currently disabled (DOWN) and is connected to the Manufacturing zone network segment which is separated from the ICS systems by a router/firewall.</li>
+            </ul>
+          </li>
+          <li><input type="checkbox"> Verify that the hacker can communicate with the PLC by typing the command <span class="typed">ping 10.0.255.102 -c 4</span> and observing that 4 packets are transmitted and 4 packets are received.</li>
+          <li><input type="checkbox"> Verify that the PLC is running by typing the command<span class="typed"> nc 10.0.255.102 23</span> and observing that the PLC is running, and that the IP address of the PLC and the address of the connecting system is shown.  
+          <ul>
+            <li>The <span class="quote">nc</span> command starts the <span class="quote">netcat</span> program which is a useful network utility that allows a quick connection to network services. In this case <span class="quote">netcat</span> is connecting to the <span class="quote">telnet</span> service running on the PLC.</li>
+            <li>Note that theÂ KaliÂ system is on the same IP  network (10.0.255.0/24) as the ICS systems (10.0.255.0/24).</li>
+          </ul>
+          </li>
+        </ol>
+        
+        <h3>Part 3</h3>
+        <p><strong>Capture and view data transmitted in the Cell-Area zone</strong></p>
+        <p>In this part of the lab you are going to use the Wireshark network monitoring software to capture and view data being transmitted on the Cell-Area zone.</p>
+        <ol>
+          <li><input type="checkbox"> Start the Wireshark program by typing the command <span class="typed">sudo wireshark</span>.  
+          <ul>
+            <li>The Wireshark program requires administrative privileges to the system, since you are currently logged in as the student user you must indicate that you wish to use administrative privileges prefixing the command to be executed with sudo.</li>
+          </ul>
+          </li>
+          <li><input type="checkbox"> Authenticate to the system by typing in the password <span class="typed">Password01</span> followed by the <span class="typed">&lt;ENTER&gt;</span> key.  
+          <ul>
+            <li>To prevent people from looking over your shoulder and writing down the password it will not be displayed as you are typing.</li>
+          </ul>
+          </li>
+          <li><input type="checkbox">After the Wireshark program starts select the <span class="quote">cell-area-zone</span> network device to indicate that you wish to capture data on that device.</li>
+          <li><input type="checkbox">Click the <span class="quote">Capture</span> menu then select the <span class="quote">Start</span> option.</li>
+          <li><input type="checkbox">
+          The data you need to view will be captured very quickly so immediately return to the  <span class="quote">Capture</span> menu and select the <span class="quote">Stop</span> option.</li>
+          <li><input type="checkbox">If necessary scroll to the right in the top, <span class="quote">packet list</span> panel, until you are able to view the data shown in the <span class="quote">Info</span> column (<a href="../images/Wireshark-DisplayFilter-OPC.png" target="_blank" title="Graphic showing location of screen element">Example</a>).
+            <ul>
+              <li>The standard Wireshark output window is divided into three panels, the top panel is named the <span class="quote">packet list</span> panel and contains a summary of each packet captured.</li>
+              <li> The middle panel is named the <span class="quote">packet details</span> panel and shows a decoded view of the packet currently selected in the <span class="quote">packet list</span> panel.</li>
+              <li>The bottom panel is named the<span class="quote"> packet bytes</span> panel and shows the raw data contained in the packet currently selected in the <span class="quote">packet list</span> panel.</li>
+            </ul>
+          </li>
+          <li><input type="checkbox">Scroll through the packets in the top <span class="quote">packet list</span> panel until you find a packet labeled as a <span class="quote">Response</span> to a<span class="quote"> Read Holding Registers</span> request (<a href="../images/Part4-1.png" target="_blank" title="Graphic showing location of screen element">Example</a>).</li>
+          <li><input type="checkbox">In the top <span class="quote">packet list</span> panel, select the packet containing Info related to a <span class="quote">Response: </span> associated with a  <span class="quote">Read Holding Registers</span> request.</li>
+          <li><input type="checkbox">In the middle <span class="quote">packet details</span> panel expand the <span class="quote">Modbus</span> category of detail data  (<a href="../images/Part4-2.png" target="_blank" title="Graphic showing location of screen element">Example</a>).</li>
+          <li><input type="checkbox">Make a note of the data contained in<span class="quote"> Register 0, Register 1</span> and <span class="quote">Register 2</span>.</li>
+          <li><input type="checkbox">
+          Access the <span class="quote">HMI </span>virtual machine and take a moment to examine the data and controls available in the running <span class="quote">AdvancedHMI</span> program.</li>
+          <li><input type="checkbox">Click on the value shown in the <span class="quote">Pump on at:</span> field (<a href="../images/Part4-3.png" target="_blank" title="Graphic showing location of screen element">Example</a>).</li>
+          <li><input type="checkbox">Change the pump on value to <span class="typed">10</span> (<a href="../images/Part4-4.png" target="_blank" title="Graphic showing location of screen element">Example</a>).</li>
+          <li><input type="checkbox">Take a minute to observe how this modifies the behavior of the system.</li>
+          <li><input type="checkbox">
+          Access the <span class="quote">Kali</span> system.</li>
+          <li><input type="checkbox">Begin a new network data capture by accessing the <span class="quote">Capture</span> menu in Wireshark and choosing the <span class="quote">Start</span> option.</li>
+          <li><input type="checkbox">Click the <span class="button">Continue without Saving</span> button when you are informed that there are unsaved packets in the problem</li>
+          <li><input type="checkbox">
+          The data you need to view will be captured very quickly so immediately return to the <span class="quote">Capture</span> menu and select the <span class="quote">Stop</span> option.</li>
+          <li><input type="checkbox">Scroll through the packets in the top <span class="quote">packet list</span> panel until you find a packet labeled as a <span class="quote">Response</span> to a<span class="quote"> Read Holding Registers</span> request.</li>
+          <li><input type="checkbox">In the top  <span class="quote">packet list</span> panel, select the packet containing a <span class="quote">Response</span> to <span class="quote">Read Holding Registe</span>r request.</li>
+          <li><input type="checkbox">In the middle <span class="quote">packet details</span> panel expand the <span class="quote">Modbus</span> category of detail data.</li>
+          <li><input type="checkbox">Take a screen shot showing the data in <span class="quote"> Register 0, Register 1</span> and <span class="quote">Register 2</span> (<a href="../images/Part4-2.png" target="_blank" title="Graphic showing location of screen element">Example</a>) and paste it into the <a href="forms/zoning-lab-form.doc">Zoning Lab Form found here</a>. </li>
+          <li><input type="checkbox">Based on the packets captured it appears that the value in Register 2 tells the system to turn the pump on when the level of liquid drops to 10%. What do the values stored in Registers 0 and 1 represent? Answer these questions in the previously downloaded Zoning Lab Form.</li>
+        </ol>
+
+        <h3>Part 4</h3> 
+        <p><strong>Change the hacker's network segment</strong></p>
+        <p>In this part of the lab you are going to remove the hacker from the network containing the ICS systems. The hacker system will be moved from the Cell/Area zone to the Manufacturing zone  (<a href="reference/Visio-ZoneingAndICSSecurity-Insecure.pdf" target="_blank" title="Graphical network diagram">Network diagram</a>).</p>
+        <ol>
+          <li><input type="checkbox"> Close the Wireshark program without saving any data.</li>
+          <li><input type="checkbox"> Access the terminal (command prompt).</li>
+          <li><input type="checkbox"> Bring up the network device connected to the manufacturing zone network segment using the command <span class="typed">sudo ip link set up manufact-zone </span>(<a href="../images/Part5-1.png" target="_blank" title="Graphic showing location of screen element">Example</a>).  
+          <ul>
+            <li>If you are using sudo and are prompted to authenticate type in the password <span class="typed">Password01</span> followed by the <span class="typed">&lt;ENTER&gt;</span> key. </li>
+          </ul>
+          </li>
+          <li><input type="checkbox"> Verify that the device is connected to the network by typing the command<span class="typed"> ip address show manufact-zone</span> and verifying from the output that the device's state is UP but that it has not yet been assigned an IP address.</li>
+          <li><input type="checkbox"> View the available network configurations by typing the command <span class="typed">nmcli connection</span>.</li>
+          <li><input type="checkbox"> Notice that the <span class="quote">Cell-Area Zone</span> configuration is associated with  a device but the <span class="quote">Manufacturing Zone</span> configuration is not.</li>
+          <li><input type="checkbox"> Type the letter <span class="typed">q</span> to stop viewing the network configurations. </li>
+          <li><input type="checkbox"> Enable the <span class="quote">Manufacturing Zone</span> network configuration by typing the command <span class="typed">sudo nmcli connection up &quot;Manufacturing Zone</span>&quot; (<a href="../images/Part5-2.png" target="_blank" title="Graphic showing location of screen element">Example</a>).</li>
+          <li><input type="checkbox"> Verify that the <span class="quote">Manufacturing Zone</span> configuration is now associated with a device by again typing the command <span class="typed">nmcli connection</span>.</li>
+          <li><input type="checkbox"> Type the letter <span class="typed">q</span> to stop viewing the network configurations. </li>
+          <li><input type="checkbox"> Verify that the <span class="quote">manufact-zone</span> device has been assigned an IP address by again typing the command<span class="typed"> ip address show manufact-zone</span>.</li>
+          <li><input type="checkbox"> To prevent confusion later disable the <span class="quote">Cell-Area Zone</span> configuration by typing the command <span class="typed">sudo nmcli connection down &quot;Cell-Area Zone</span>&quot; .</li>
+          <li><input type="checkbox"> Verify that now the <span class="quote">Manufacturing Zone</span> configuration is associated with  a device but the   <span class="quote">Cell-Area Zone</span> configuration is not by  typing the command <span class="typed">nmcli connection</span>.</li>
+          <li><input type="checkbox"> Type the letter <span class="typed">q</span> to stop viewing the network configurations.  </li>
+        </ol>
+
+        <h3>Part 5</h3>
+        <p><strong>Capture and view data transmitted in the Manufacturing zone</strong></p>
+        <p>In this part of the lab you are going to use the Wireshark network monitoring software to capture and view data being transmitted on the Manufacturing zone.</p>
+        <ol>
+          <li><input type="checkbox"> Verify that the hacker can communicate with the PLC by typing the command <span class="typed">ping 10.0.255.102 -c 4</span> and observing that 4 packets are transmitted and 4 packets are received.</li>
+          <li><input type="checkbox"> Verify that the PLC is running by typing the command<span class="typed"> nc 10.0.255.102 23</span> and observing that the PLC is running, and that the IP address of the PLC and the address of the connecting system is shown. 
+            <ul>
+              <li>Note that this time the  <span class="quote">Kali</span> system is on a different IP network (10.0.105.0/24) than the ICS systems (10.0.255.0/24).</li>
+            </ul>
+          </li>
+          <li><input type="checkbox"> Start the Wireshark program by typing the command <span class="typed">sudo wireshark</span>. </li>
+          <li><input type="checkbox"> After the Wireshark program starts select the <span class="quote">manufact-zone</span> network device to indicate that you wish to capture data on that device.</li>
+          <li><input type="checkbox"> Click the <span class="quote">Capture</span> menu then select the <span class="quote">Start</span> option.</li>
+          <li><input type="checkbox"> Wait a few moments and note that little to no network traffic is currently being captured.</li>
+          <li><input type="checkbox"> Access the <span class="quote">HMI </span>virtual machine.</li>
+          <li><input type="checkbox"> Click on the value shown in the <span class="quote">Pump off at:</span> field in the <span class="quote">AdvancedHMI</span> program running on the <span class="quote">HMI</span> virtual machine.</li>
+          <li><input type="checkbox"> Change the pump off value to <span class="typed">60</span>.</li>
+          <li><input type="checkbox"> Observe the system for a minute and verify that this change modifies the behavior of the system.</li>
+          <li><input type="checkbox"> Return to the <span class="quote">Kali</span> system and note that none of the changes or activity between the ICS systems has been captured.</li>
+          <li><input type="checkbox"> Open a new Terminal (command prompt) window by clicking the <span class="typed">Terminal Emulator</span> button found at the upper left hand corner of the  <span class="quote">Kali</span> system.</li>
+          <li><input type="checkbox"> Ping the PLC  by typing the command <span class="typed">ping 10.0.255.102 -c 4</span>.</li>
+          <li><input type="checkbox"> Return to the Wireshark screen and notice that since the <span class="quote">Kali</span> system was involved in the network communication the ping (ICMP) traffic was captured.</li>
+          <li><input type="checkbox"> Stop the network traffic capture by accessing the <span class="quote">Capture</span> menu and selecting the <span class="quote">Stop</span> option.</li>
+          <li><input type="checkbox"> Take a screen shot showing a captured ping (ICMP) request and reply and paste it into the previously downloaded Zoning Lab Form.</li>
+          <li><input type="checkbox"> In the previously downloaded Zoning Lab Form answer the question &quot;Why was the network ping traffic between the Kali  system and the PLC captured but the data between the PLC and other ICS systems  was not?&quot;.</li>
+          <li><input type="checkbox"> In the previously downloaded Zoning Lab Form answer the question &quot;If using proper zoning techniques is more secure why might companies not configure their systems using this technique?&quot;.</li>
+          <li><input type="checkbox"> To end the lab, power off the virtual machines.</li>
+        </ol>
+        <br><br><br>
+    </div>
+</body>
+</html>
